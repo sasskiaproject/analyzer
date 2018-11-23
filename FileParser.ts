@@ -1,5 +1,4 @@
 import * as sast from 'sast';
-import * as fs from 'fs';
 import {ColorFeature} from "./Features/ColorFeature";
 import {CssFeature, CssSelector} from "./Features/CssFeature";
 import {ColorProcessor} from "./Processors/ColorProcessor";
@@ -8,23 +7,29 @@ import {ColorStorage} from "./Storages/ColorStorage";
 
 export class FileParser {
     protected context: string;
-    parse(filepath) {
-        this.context = filepath;
-        const css = fs.readFileSync(filepath, "utf8");
-        const tree = sast.parse(css, {syntax: 'scss'});
-        if (tree.type !== 'stylesheet') {
-            // error
-            throw new Error('Invalid type.');
-        }
-        for (const item of tree.children) {
-            if (item.type === 'ruleset') {
-                this.parse_ruleset(item);
-            } else if(item.type === 'declaration') { // SCSS variables
-                this.parse_variable_declaration(item);
-            } else {
-                console.debug(item);
-            }
-        }
+    parse(filepath): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.context = filepath;
+
+            sast.parseFile(filepath)
+                .then((tree) => {
+                    if (tree.type !== 'stylesheet') {
+                        // error
+                        throw new Error('Invalid type.');
+                    }
+                    for (const item of tree.children) {
+                        if (item.type === 'ruleset') {
+                            this.parse_ruleset(item);
+                        } else if(item.type === 'declaration') { // SCSS variables
+                            this.parse_variable_declaration(item);
+                        } else {
+                            console.debug(item);
+                        }
+                    }
+                    resolve();
+                })
+                .catch((error) => reject(error));
+        })
     }
 
     /**
