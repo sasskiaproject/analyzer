@@ -1,0 +1,19 @@
+$red: #f00;
+
+.btn {
+  color: $red;
+  font-size:1em;
+}
+
+span {
+  color: red;
+}
+
+#id {
+  font-color: #efefef;
+  border-color: $red;
+}
+
+.btn > a {
+  background-color: rgba(10, 10, 10, 0.5);
+}
