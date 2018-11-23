@@ -7,7 +7,9 @@ import {VariableStorage} from "./Storages/VariableStorage";
 import {ColorStorage} from "./Storages/ColorStorage";
 
 export class FileParser {
+    protected context: string;
     parse(filepath) {
+        this.context = filepath;
         const css = fs.readFileSync(filepath, "utf8");
         const tree = sast.parse(css, {syntax: 'scss'});
         if (tree.type !== 'stylesheet') {
@@ -18,7 +20,7 @@ export class FileParser {
             if (item.type === 'ruleset') {
                 this.parse_ruleset(item);
             } else if(item.type === 'declaration') { // SCSS variables
-                this.parse_declaration(item);
+                this.parse_variable_declaration(item);
             } else {
                 console.debug(item);
             }
@@ -50,6 +52,7 @@ export class FileParser {
                     ColorStorage.map.set(rgba_string, []);
                 }
                 prop.selector = selector;
+                prop.context = this.context;
                 ColorStorage.map.get(rgba_string).push(prop);
             }
         }
@@ -117,23 +120,30 @@ export class FileParser {
         return properties;
     }
 
+    parse_variable_declaration(declaration) {
+        const propertyObjs = declaration.children.filter(child => child.type === 'property');
+        const valueObjs = declaration.children.filter(child => child.type === 'value');
+        const colorProcessor = new ColorProcessor();
+        if (propertyObjs[0].children[0].type !== 'variable') {
+            return null;
+        }
+        const identObjs = propertyObjs[0].children[0].children.filter(child => child.type === 'ident');
+        if (colorProcessor.isProcessable('color', valueObjs)) {
+            const color = colorProcessor.process('color', valueObjs);
+            // Add color to variablemap
+            VariableStorage.map.set(identObjs[0].value, color);
+        }
+    }
+
     parse_declaration(declaration): CssFeature {
         const propertyObjs = declaration.children.filter(child => child.type === 'property');
         const valueObjs = declaration.children.filter(child => child.type === 'value');
         const colorProcessor = new ColorProcessor();
         switch (propertyObjs[0].children[0].type) {
-            case 'variable':
-                const identObjs = propertyObjs[0].children[0].children.filter(child => child.type === 'ident');
-                if (colorProcessor.isProcessable('color', valueObjs[0].children[0])) {
-                    const color = colorProcessor.process('color', valueObjs);
-                    // Add color to variablemap
-                    VariableStorage.map.set(identObjs[0].value, color);
-                }
-                break;
             case 'ident':
                 const property_type = propertyObjs[0].children[0].value;
                 console.debug('Parsing declaration of type ident – property_type=' + property_type);
-                if (colorProcessor.isProcessable(property_type, valueObjs[0].children[0])) {
+                if (colorProcessor.isProcessable(property_type, valueObjs)) {
                     return colorProcessor.process(property_type, valueObjs);
                 } else {
                     console.debug('Skipping property of type ' + property_type + '.');

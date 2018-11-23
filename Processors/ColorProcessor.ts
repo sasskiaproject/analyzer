@@ -50,7 +50,6 @@ export class ColorProcessor extends AbstractProcessor {
                 color = Object.assign( color, VariableStorage.map.get(variable_name) );
                 color.original = '$' + variable_name;
                 color.original_type = 'variable';
-                // todo: deal with variables
                 break;
             case 'color': // HEX color, e.g. #000 or #000000
                 color.original = '#' + valueObject.value;

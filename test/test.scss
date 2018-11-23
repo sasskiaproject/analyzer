@@ -1,12 +1,10 @@
 $red: #f00;
+$header-color: green;
+$header-color-border: $red;
 
 .btn {
   color: $red;
   font-size:1em;
-}
-
-span {
-  color: red;
 }
 
 #id {
@@ -16,4 +14,19 @@ span {
 
 .btn > a {
   background-color: rgba(10, 10, 10, 0.5);
+}
+
+div {
+  .header {
+    a {
+      color: $header-color;
+      &:hover {
+        color: blue;
+        border: 1px solid $header-color-border;
+      }
+    }
+    p#content {
+      border: 1px solid rgba(100, 100, 100, 0.8);
+    }
+  }
 }

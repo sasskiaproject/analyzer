@@ -6,7 +6,7 @@ console.debug = () => {};
 
 class CssInfo {
     parseFile() {
-        new FileParser().parse(path.join('test', 'test3.scss'));
+        new FileParser().parse(path.join('test', 'test.scss'));
     }
     displayResults() {
         console.log(ColorStorage.map.size + ' Farben gefunden:');
@@ -16,7 +16,7 @@ class CssInfo {
         ColorStorage.map.forEach((value, key) => {
             console.log('= Farbe ' + key + ' =');
             for (let color of value) {
-                console.log(color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
+                console.log(color.context + ' - ' + color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
             }
         });
     }
