@@ -63,7 +63,6 @@ export class FileParser {
         if (selector.type !== 'selector') {
             throw new Error('parse_selector - Invalid structure...');
         }
-        console.log(selector);
         const selectorFragments = [];
         for (const selectorFragment of selector.children) {
             // keep spaces and >

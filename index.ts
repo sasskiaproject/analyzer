@@ -2,7 +2,7 @@ import * as path from 'path';
 import {FileParser} from "./FileParser";
 import {ColorStorage} from "./Storages/ColorStorage";
 
-//console.debug = () => {};
+console.debug = () => {};
 
 class CssInfo {
     parseFile() {
