@@ -1,0 +1,10 @@
+div {
+  .header {
+    a {
+      color: green;
+      &:hover {
+        color: blue;
+      }
+    }
+  }
+}
