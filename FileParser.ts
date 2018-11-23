@@ -125,7 +125,7 @@ export class FileParser {
             case 'variable':
                 const identObjs = propertyObjs[0].children[0].children.filter(child => child.type === 'ident');
                 if (colorProcessor.isProcessable('color', valueObjs[0].children[0])) {
-                    const color = colorProcessor.process('color', valueObjs[0].children[0]);
+                    const color = colorProcessor.process('color', valueObjs);
                     // Add color to variablemap
                     VariableStorage.map.set(identObjs[0].value, color);
                 }
@@ -134,7 +134,7 @@ export class FileParser {
                 const property_type = propertyObjs[0].children[0].value;
                 console.debug('Parsing declaration of type ident – property_type=' + property_type);
                 if (colorProcessor.isProcessable(property_type, valueObjs[0].children[0])) {
-                    return colorProcessor.process(property_type, valueObjs[0].children[0]);
+                    return colorProcessor.process(property_type, valueObjs);
                 } else {
                     console.debug('Skipping property of type ' + property_type + '.');
                 }

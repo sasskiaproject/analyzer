@@ -7,17 +7,33 @@ import {Configuration} from "../Configuration";
 
 export class ColorProcessor extends AbstractProcessor {
     isProcessable(property_type: string, object): boolean {
-        return /color/.test(property_type);
+        return /color/.test(property_type) || property_type === 'border';
+    }
+
+    extract_border_colors(valueObj) {
+        const colorObjs = valueObj[0].children.filter(x => ['color', 'function', 'variable', 'ident'].indexOf(x.type) !== -1);
+        // ident can also be a non-color like "solid" – check if it is a valid color
+        const removeNonColors = colorObjs.filter(x => x.type !== 'ident' || toHex(x.value) );
+        return removeNonColors[0]; // todo: check if looping over all entries makes sense
     }
 
     process(property_type, valueObj): ColorFeature {
         let color = new ColorFeature();
         let rgb;
-        switch (valueObj.type) {
+
+        let valueObject = valueObj[0].children[0]; // todo: check if looping over all entries makes sense
+        if (property_type === 'border') {
+            valueObject = this.extract_border_colors(valueObj);
+            if (!valueObject) {
+                return null;
+            }
+        }
+
+        switch (valueObject.type) {
             case 'ident': // basic string, e.g. black
-                color.original = valueObj.value;
+                color.original = valueObject.value;
                 color.original_type = 'name';
-                rgb = hexRgb(toHex(valueObj.value));
+                rgb = hexRgb(toHex(valueObject.value));
                 color.rgba.r = rgb.red;
                 color.rgba.g = rgb.green;
                 color.rgba.b = rgb.blue;
@@ -27,7 +43,7 @@ export class ColorProcessor extends AbstractProcessor {
                 if (Configuration.skip_variables) {
                     return null;
                 }
-                const variable_name = valueObj.children[0].value;
+                const variable_name = valueObject.children[0].value;
                 if (!VariableStorage.map.has(variable_name)) {
                     throw new Error('Missing variable ' + variable_name + '!');
                 }
@@ -37,17 +53,17 @@ export class ColorProcessor extends AbstractProcessor {
                 // todo: deal with variables
                 break;
             case 'color': // HEX color, e.g. #000 or #000000
-                color.original = '#' + valueObj.value;
+                color.original = '#' + valueObject.value;
                 color.original_type = 'hex';
-                rgb = hexRgb(valueObj.value);
+                rgb = hexRgb(valueObject.value);
                 color.rgba.r = rgb.red;
                 color.rgba.g = rgb.green;
                 color.rgba.b = rgb.blue;
                 color.rgba.a = rgb.alpha / 255;
                 break;
             case 'function': // RGB color, e.g. rgb(10, 10, 10) or rgba(10, 10, 10, 0.1)
-                const function_name = valueObj.children[0].value;
-                const function_args = valueObj.children[1].children;
+                const function_name = valueObject.children[0].value;
+                const function_args = valueObject.children[1].children;
                 if (function_name === 'rgb' || function_name === 'rgba') {
                     const numbers = function_args.filter(color => color.type === 'number').map(x => Number(x.value));
                     color.original_type = 'rgba';

@@ -6,7 +6,7 @@ console.debug = () => {};
 
 class CssInfo {
     parseFile() {
-        new FileParser().parse(path.join('test', 'test2.scss'));
+        new FileParser().parse(path.join('test', 'test3.scss'));
     }
     displayResults() {
         console.log(ColorStorage.map.size + ' Farben gefunden:');
