@@ -15,6 +15,7 @@ export interface CssContext {
 }
 
 export class CssFeature {
+    public uuid: string;
     public context: CssContext; // ruleset context
     public selector: CssSelector;
     public property_type: string;

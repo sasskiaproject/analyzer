@@ -14,7 +14,8 @@
     "colornames": "^1.1.1",
     "hex-rgb": "^3.0.0",
     "sast": "^0.7.0",
-    "typescript": "^3.1.6"
+    "typescript": "^3.1.6",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^10.12.10"

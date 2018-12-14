@@ -16,6 +16,7 @@ export interface CssContext {
     content: string[];
 }
 export declare class CssFeature {
+    uuid: string;
     context: CssContext;
     selector: CssSelector;
     property_type: string;

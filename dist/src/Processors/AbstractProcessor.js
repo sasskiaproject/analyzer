@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var uuid = require("uuid/v1");
 var AbstractProcessor = /** @class */ (function () {
     function AbstractProcessor() {
     }
     AbstractProcessor.prototype.process = function (property_type, object, selector) {
         var feature = this.newFeature();
+        feature.uuid = uuid();
         feature.selector = selector;
         feature.property_type = property_type;
         feature.line = object[0].position.start.line; // assume that start and end line are be the same...
