@@ -11,12 +11,14 @@ export interface CssContext {
     file: string;
     start: {line: number; column: number};
     end: {line: number; column: number};
+    content: string|null;
 }
 
 export class CssFeature {
-    public context: CssContext;
+    public context: CssContext; // ruleset context
     public selector: CssSelector;
     public property_type: string;
     public original: string;
     public original_type: string;
+    public line: number;
 }

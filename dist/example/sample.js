@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var src_1 = require("../src");
 console.debug = function () { };
-var info = new src_1.CssInfo();
+var info = new src_1.CssInfo({
+    appendContentToFeature: true
+});
 info.parseFile('test.scss')
     .then(function (result) {
     console.log(result.colors.size + ' Farben gefunden:');
@@ -10,7 +12,7 @@ info.parseFile('test.scss')
         console.log('= Farbe ' + key + ' =');
         for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
             var color = value_1[_i];
-            console.log(color.context.file + ' - ' + color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
+            console.log(color.context.file + ':' + color.line + ' - ' + color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
         }
     });
 })

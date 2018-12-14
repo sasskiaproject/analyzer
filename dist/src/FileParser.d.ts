@@ -1,6 +1,10 @@
 import { CssFeature, CssSelector } from "./Features/CssFeature";
+import { CssInfoConfig } from "./CssInfo";
 export declare class FileParser {
-    protected context: string;
+    protected config: CssInfoConfig;
+    protected filePath: string;
+    protected fileContent: string[];
+    constructor(config: any);
     parse(filepath: any): Promise<void>;
     /**
      * A ruleset is a block of CSS statements grouped by a selector

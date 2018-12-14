@@ -4,12 +4,25 @@ import {CssFeature, CssSelector} from "./Features/CssFeature";
 import {ColorProcessor} from "./Processors/ColorProcessor";
 import {VariableStorage} from "./Storages/VariableStorage";
 import {ColorStorage} from "./Storages/ColorStorage";
+import {CssInfoConfig} from "./CssInfo";
+import * as fs from "fs";
 
 export class FileParser {
-    protected context: string;
+    protected config: CssInfoConfig;
+    protected filePath: string;
+    protected fileContent: string[] = null;
+
+    constructor(config) {
+        this.config = config;
+    }
+
     parse(filepath): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            this.context = filepath;
+            this.filePath = filepath;
+            if (this.config.appendContentToFeature) {
+                // Load file contents
+                this.fileContent = fs.readFileSync(filepath, 'utf8').split("\n");
+            }
 
             sast.parseFile(filepath)
                 .then((tree) => {
@@ -51,7 +64,12 @@ export class FileParser {
         const properties = this.parse_block(blockObjs[0], selector);
 
         for (const prop of properties) {
-            prop.context = { file: this.context, start: item.position.start, end: item.position.end};
+            prop.context = { file: this.filePath, start: item.position.start, end: item.position.end, content: null};
+            if (this.config.appendContentToFeature) {
+                if (this.fileContent.length >= item.position.start.line && this.fileContent.length >= item.position.end.line) {
+                    prop.context.content = this.fileContent.filter((value, index) => index+1 >= item.position.start.line && index+1 <= item.position.end.line).join("\n");
+                }
+            }
             if (prop instanceof ColorFeature) {
                 const rgba_string = prop.rgba.toString();
                 if (!ColorStorage.map.has(rgba_string)) {

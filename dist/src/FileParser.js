@@ -6,13 +6,20 @@ var CssFeature_1 = require("./Features/CssFeature");
 var ColorProcessor_1 = require("./Processors/ColorProcessor");
 var VariableStorage_1 = require("./Storages/VariableStorage");
 var ColorStorage_1 = require("./Storages/ColorStorage");
+var fs = require("fs");
 var FileParser = /** @class */ (function () {
-    function FileParser() {
+    function FileParser(config) {
+        this.fileContent = null;
+        this.config = config;
     }
     FileParser.prototype.parse = function (filepath) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this.context = filepath;
+            _this.filePath = filepath;
+            if (_this.config.appendContentToFeature) {
+                // Load file contents
+                _this.fileContent = fs.readFileSync(filepath, 'utf8').split("\n");
+            }
             sast.parseFile(filepath)
                 .then(function (tree) {
                 if (tree.type !== 'stylesheet') {
@@ -55,7 +62,12 @@ var FileParser = /** @class */ (function () {
         var properties = this.parse_block(blockObjs[0], selector);
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var prop = properties_1[_i];
-            prop.context = { file: this.context, start: item.position.start, end: item.position.end };
+            prop.context = { file: this.filePath, start: item.position.start, end: item.position.end, content: null };
+            if (this.config.appendContentToFeature) {
+                if (this.fileContent.length >= item.position.start.line && this.fileContent.length >= item.position.end.line) {
+                    prop.context.content = this.fileContent.filter(function (value, index) { return index + 1 >= item.position.start.line && index + 1 <= item.position.end.line; }).join("\n");
+                }
+            }
             if (prop instanceof ColorFeature_1.ColorFeature) {
                 var rgba_string = prop.rgba.toString();
                 if (!ColorStorage_1.ColorStorage.map.has(rgba_string)) {
