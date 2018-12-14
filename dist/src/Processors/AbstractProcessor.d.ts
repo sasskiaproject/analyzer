@@ -1,5 +1,6 @@
-import { CssFeature } from "../Features/CssFeature";
-export declare abstract class AbstractProcessor {
+import { CssFeature, CssSelector } from "../Features/CssFeature";
+export declare abstract class AbstractProcessor<T extends CssFeature> {
+    abstract newFeature(): T;
     abstract isProcessable(property_type: any, object: any): any;
-    abstract process(property_type: any, object: any): CssFeature;
+    process(property_type: any, object: any, selector: CssSelector): T;
 }

@@ -10,7 +10,7 @@ info.parseFile('test.scss')
         console.log('= Farbe ' + key + ' =');
         for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
             var color = value_1[_i];
-            console.log(color.context + ' - ' + color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
+            console.log(color.context.file + ' - ' + color.selector.prettified + ' { ' + color.property_type + ': ' + color.original + ' }');
         }
     });
 })

@@ -51,13 +51,12 @@ export class FileParser {
         const properties = this.parse_block(blockObjs[0], selector);
 
         for (const prop of properties) {
+            prop.context = { file: this.context, start: item.position.start, end: item.position.end};
             if (prop instanceof ColorFeature) {
                 const rgba_string = prop.rgba.toString();
                 if (!ColorStorage.map.has(rgba_string)) {
                     ColorStorage.map.set(rgba_string, []);
                 }
-                prop.selector = selector;
-                prop.context = this.context;
                 ColorStorage.map.get(rgba_string).push(prop);
             }
         }
@@ -104,11 +103,10 @@ export class FileParser {
             const part = prefix + selectorFragment.children[0].value;
             selectorFragments.push(part);
         }
-        let pretty = selectorFragments.filter(x => x !== ' ').join(' ');
-        return {selector: selectorFragments.join(''), prettified: pretty};
+        return new CssSelector(selectorFragments);
     }
 
-    parse_block(block, selector): CssFeature[] {
+    parse_block(block, selector: CssSelector): CssFeature[] {
         const rulesetObjs = block.children.filter(child => child.type === 'ruleset');
         for (const ruleset of rulesetObjs) {
             this.parse_ruleset(ruleset, selector);
@@ -117,7 +115,7 @@ export class FileParser {
         const declarationObjs = block.children.filter(child => child.type === 'declaration');
         const properties = [];
         for (const declaration of declarationObjs) {
-            const parsed = this.parse_declaration(declaration);
+            const parsed = this.parse_declaration(declaration, selector);
             if (parsed) {
                 properties.push(parsed);
             }
@@ -134,13 +132,13 @@ export class FileParser {
         }
         const identObjs = propertyObjs[0].children[0].children.filter(child => child.type === 'ident');
         if (colorProcessor.isProcessable('color', valueObjs)) {
-            const color = colorProcessor.process('color', valueObjs);
+            const color = colorProcessor.process('color', valueObjs, null);
             // Add color to variablemap
             VariableStorage.map.set(identObjs[0].value, color);
         }
     }
 
-    parse_declaration(declaration): CssFeature {
+    parse_declaration(declaration, selector: CssSelector): CssFeature {
         const propertyObjs = declaration.children.filter(child => child.type === 'property');
         const valueObjs = declaration.children.filter(child => child.type === 'value');
         const colorProcessor = new ColorProcessor();
@@ -149,7 +147,7 @@ export class FileParser {
                 const property_type = propertyObjs[0].children[0].value;
                 console.debug('Parsing declaration of type ident – property_type=' + property_type);
                 if (colorProcessor.isProcessable(property_type, valueObjs)) {
-                    return colorProcessor.process(property_type, valueObjs);
+                    return colorProcessor.process(property_type, valueObjs, selector);
                 } else {
                     console.debug('Skipping property of type ' + property_type + '.');
                 }

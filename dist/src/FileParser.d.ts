@@ -13,7 +13,7 @@ export declare class FileParser {
      * @param selector
      */
     parse_selector(selector: any): CssSelector;
-    parse_block(block: any, selector: any): CssFeature[];
+    parse_block(block: any, selector: CssSelector): CssFeature[];
     parse_variable_declaration(declaration: any): any;
-    parse_declaration(declaration: any): CssFeature;
+    parse_declaration(declaration: any, selector: CssSelector): CssFeature;
 }

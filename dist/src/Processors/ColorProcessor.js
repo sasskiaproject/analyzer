@@ -33,9 +33,10 @@ var ColorProcessor = /** @class */ (function (_super) {
         var removeNonColors = colorObjs.filter(function (x) { return x.type !== 'ident' || toHex(x.value); });
         return removeNonColors[0]; // todo: check if looping over all entries makes sense
     };
-    ColorProcessor.prototype.process = function (property_type, valueObj) {
-        var color = new ColorFeature_1.ColorFeature();
-        var rgb;
+    ColorProcessor.prototype.newFeature = function () {
+        return new ColorFeature_1.ColorFeature();
+    };
+    ColorProcessor.prototype.process = function (property_type, valueObj, selector) {
         var valueObject = valueObj[0].children[0]; // todo: check if looping over all entries makes sense
         if (property_type === 'border') {
             valueObject = this.extract_border_colors(valueObj);
@@ -43,6 +44,8 @@ var ColorProcessor = /** @class */ (function (_super) {
                 return null;
             }
         }
+        var color = _super.prototype.process.call(this, property_type, valueObj, selector);
+        var rgb;
         switch (valueObject.type) {
             case 'ident': // basic string, e.g. black
                 color.original = valueObject.value;
@@ -61,7 +64,7 @@ var ColorProcessor = /** @class */ (function (_super) {
                 if (!VariableStorage_1.VariableStorage.map.has(variable_name)) {
                     throw new Error('Missing variable ' + variable_name + '!');
                 }
-                color = Object.assign(color, VariableStorage_1.VariableStorage.map.get(variable_name));
+                color.rgba = Object.assign(color.rgba, VariableStorage_1.VariableStorage.map.get(variable_name).rgba);
                 color.original = '$' + variable_name;
                 color.original_type = 'variable';
                 break;
@@ -91,7 +94,6 @@ var ColorProcessor = /** @class */ (function (_super) {
                 console.log('parse_declaration - undefined: ', valueObj);
                 return;
         }
-        color.property_type = property_type;
         return color;
     };
     return ColorProcessor;

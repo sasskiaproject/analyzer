@@ -4,8 +4,9 @@ import {ColorFeature} from "../Features/ColorFeature";
 import {AbstractProcessor} from "./AbstractProcessor";
 import {VariableStorage} from "../Storages/VariableStorage";
 import {Configuration} from "../Configuration";
+import {CssSelector} from "../Features/CssFeature";
 
-export class ColorProcessor extends AbstractProcessor {
+export class ColorProcessor extends AbstractProcessor<ColorFeature> {
     isProcessable(property_type: string, object): boolean {
         return /color/.test(property_type) || property_type === 'border';
     }
@@ -17,10 +18,11 @@ export class ColorProcessor extends AbstractProcessor {
         return removeNonColors[0]; // todo: check if looping over all entries makes sense
     }
 
-    process(property_type, valueObj): ColorFeature {
-        let color = new ColorFeature();
-        let rgb;
+    newFeature() {
+        return new ColorFeature();
+    }
 
+    process(property_type, valueObj, selector: CssSelector): ColorFeature {
         let valueObject = valueObj[0].children[0]; // todo: check if looping over all entries makes sense
         if (property_type === 'border') {
             valueObject = this.extract_border_colors(valueObj);
@@ -28,6 +30,8 @@ export class ColorProcessor extends AbstractProcessor {
                 return null;
             }
         }
+        let color = super.process(property_type, valueObj, selector);
+        let rgb;
 
         switch (valueObject.type) {
             case 'ident': // basic string, e.g. black
@@ -47,7 +51,7 @@ export class ColorProcessor extends AbstractProcessor {
                 if (!VariableStorage.map.has(variable_name)) {
                     throw new Error('Missing variable ' + variable_name + '!');
                 }
-                color = Object.assign( color, VariableStorage.map.get(variable_name) );
+                color.rgba = Object.assign( color.rgba, VariableStorage.map.get(variable_name).rgba );
                 color.original = '$' + variable_name;
                 color.original_type = 'variable';
                 break;
@@ -77,7 +81,6 @@ export class ColorProcessor extends AbstractProcessor {
                 console.log('parse_declaration - undefined: ', valueObj);
                 return;
         }
-        color.property_type = property_type;
         return color;
     }
 }

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var sast = require("sast");
 var ColorFeature_1 = require("./Features/ColorFeature");
+var CssFeature_1 = require("./Features/CssFeature");
 var ColorProcessor_1 = require("./Processors/ColorProcessor");
 var VariableStorage_1 = require("./Storages/VariableStorage");
 var ColorStorage_1 = require("./Storages/ColorStorage");
@@ -54,13 +55,12 @@ var FileParser = /** @class */ (function () {
         var properties = this.parse_block(blockObjs[0], selector);
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var prop = properties_1[_i];
+            prop.context = { file: this.context, start: item.position.start, end: item.position.end };
             if (prop instanceof ColorFeature_1.ColorFeature) {
                 var rgba_string = prop.rgba.toString();
                 if (!ColorStorage_1.ColorStorage.map.has(rgba_string)) {
                     ColorStorage_1.ColorStorage.map.set(rgba_string, []);
                 }
-                prop.selector = selector;
-                prop.context = this.context;
                 ColorStorage_1.ColorStorage.map.get(rgba_string).push(prop);
             }
         }
@@ -107,8 +107,7 @@ var FileParser = /** @class */ (function () {
             var part = prefix + selectorFragment.children[0].value;
             selectorFragments.push(part);
         }
-        var pretty = selectorFragments.filter(function (x) { return x !== ' '; }).join(' ');
-        return { selector: selectorFragments.join(''), prettified: pretty };
+        return new CssFeature_1.CssSelector(selectorFragments);
     };
     FileParser.prototype.parse_block = function (block, selector) {
         var rulesetObjs = block.children.filter(function (child) { return child.type === 'ruleset'; });
@@ -120,7 +119,7 @@ var FileParser = /** @class */ (function () {
         var properties = [];
         for (var _a = 0, declarationObjs_1 = declarationObjs; _a < declarationObjs_1.length; _a++) {
             var declaration = declarationObjs_1[_a];
-            var parsed = this.parse_declaration(declaration);
+            var parsed = this.parse_declaration(declaration, selector);
             if (parsed) {
                 properties.push(parsed);
             }
@@ -136,12 +135,12 @@ var FileParser = /** @class */ (function () {
         }
         var identObjs = propertyObjs[0].children[0].children.filter(function (child) { return child.type === 'ident'; });
         if (colorProcessor.isProcessable('color', valueObjs)) {
-            var color = colorProcessor.process('color', valueObjs);
+            var color = colorProcessor.process('color', valueObjs, null);
             // Add color to variablemap
             VariableStorage_1.VariableStorage.map.set(identObjs[0].value, color);
         }
     };
-    FileParser.prototype.parse_declaration = function (declaration) {
+    FileParser.prototype.parse_declaration = function (declaration, selector) {
         var propertyObjs = declaration.children.filter(function (child) { return child.type === 'property'; });
         var valueObjs = declaration.children.filter(function (child) { return child.type === 'value'; });
         var colorProcessor = new ColorProcessor_1.ColorProcessor();
@@ -150,7 +149,7 @@ var FileParser = /** @class */ (function () {
                 var property_type = propertyObjs[0].children[0].value;
                 console.debug('Parsing declaration of type ident – property_type=' + property_type);
                 if (colorProcessor.isProcessable(property_type, valueObjs)) {
-                    return colorProcessor.process(property_type, valueObjs);
+                    return colorProcessor.process(property_type, valueObjs, selector);
                 }
                 else {
                     console.debug('Skipping property of type ' + property_type + '.');
