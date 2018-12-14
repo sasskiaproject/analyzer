@@ -1,9 +1,8 @@
-import * as path from "path";
-import {CssInfo} from "./CssInfo";
+import {CssInfo} from "../src";
 
 console.debug = () => {};
 const info = new CssInfo();
-info.parseFile(path.join('test', 'test.scss'))
+info.parseFile('test.scss')
     .then((result) => {
         console.log(result.colors.size + ' Farben gefunden:');
         result.colors.forEach((value, key) => {
