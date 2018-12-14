@@ -65,7 +65,7 @@ var FileParser = /** @class */ (function () {
             prop.context = { file: this.filePath, start: item.position.start, end: item.position.end, content: null };
             if (this.config.appendContentToFeature) {
                 if (this.fileContent.length >= item.position.start.line && this.fileContent.length >= item.position.end.line) {
-                    prop.context.content = this.fileContent.filter(function (value, index) { return index + 1 >= item.position.start.line && index + 1 <= item.position.end.line; }).join("\n");
+                    prop.context.content = this.fileContent.filter(function (value, index) { return index + 1 >= item.position.start.line && index + 1 <= item.position.end.line; });
                 }
             }
             if (prop instanceof ColorFeature_1.ColorFeature) {

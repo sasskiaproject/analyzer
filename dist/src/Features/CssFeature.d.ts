@@ -13,7 +13,7 @@ export interface CssContext {
         line: number;
         column: number;
     };
-    content: string | null;
+    content: string[];
 }
 export declare class CssFeature {
     context: CssContext;

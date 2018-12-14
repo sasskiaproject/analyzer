@@ -11,7 +11,7 @@ export interface CssContext {
     file: string;
     start: {line: number; column: number};
     end: {line: number; column: number};
-    content: string|null;
+    content: string[];
 }
 
 export class CssFeature {
