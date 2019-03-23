@@ -1,5 +1,5 @@
 {
-  "name": "cssanalyzer-analyzer",
+  "name": "sasskia-analyzer",
   "version": "1.0.0",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -8,8 +8,8 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Mario Lubenka",
+  "license": "MIT",
   "dependencies": {
     "colornames": "^1.1.1",
     "hex-rgb": "^3.0.0",
