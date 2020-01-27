@@ -5,7 +5,7 @@ var __extends = (this && this.__extends) || (function () {
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
             function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
-    }
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -36,6 +36,15 @@ var ColorProcessor = /** @class */ (function (_super) {
     ColorProcessor.prototype.newFeature = function () {
         return new ColorFeature_1.ColorFeature();
     };
+    ColorProcessor.prototype.getRGBAForHexColor = function (hexColor) {
+        var color = new ColorFeature_1.RGBColor();
+        var rgb = hexRgb(hexColor);
+        color.r = rgb.red;
+        color.g = rgb.green;
+        color.b = rgb.blue;
+        color.a = rgb.alpha;
+        return color;
+    };
     ColorProcessor.prototype.process = function (property_type, valueObj, selector) {
         var valueObject = valueObj[0].children[0]; // todo: check if looping over all entries makes sense
         if (property_type === 'border') {
@@ -45,16 +54,11 @@ var ColorProcessor = /** @class */ (function (_super) {
             }
         }
         var color = _super.prototype.process.call(this, property_type, valueObj, selector);
-        var rgb;
         switch (valueObject.type) {
             case 'ident': // basic string, e.g. black
                 color.original = valueObject.value;
                 color.original_type = 'name';
-                rgb = hexRgb(toHex(valueObject.value));
-                color.rgba.r = rgb.red;
-                color.rgba.g = rgb.green;
-                color.rgba.b = rgb.blue;
-                color.rgba.a = rgb.alpha / 255;
+                color.rgba = this.getRGBAForHexColor(toHex(valueObject.value));
                 break;
             case 'variable': // SCSS variable, e.g. $black
                 if (Configuration_1.Configuration.skip_variables) {
@@ -71,11 +75,7 @@ var ColorProcessor = /** @class */ (function (_super) {
             case 'color': // HEX color, e.g. #000 or #000000
                 color.original = '#' + valueObject.value;
                 color.original_type = 'hex';
-                rgb = hexRgb(valueObject.value);
-                color.rgba.r = rgb.red;
-                color.rgba.g = rgb.green;
-                color.rgba.b = rgb.blue;
-                color.rgba.a = rgb.alpha / 255;
+                color.rgba = this.getRGBAForHexColor(valueObject.value);
                 break;
             case 'function': // RGB color, e.g. rgb(10, 10, 10) or rgba(10, 10, 10, 0.1)
                 var function_name = valueObject.children[0].value;

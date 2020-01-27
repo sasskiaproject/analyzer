@@ -1,6 +1,6 @@
 import * as toHex from 'colornames';
 import * as hexRgb from 'hex-rgb';
-import {ColorFeature} from "../Features/ColorFeature";
+import {ColorFeature, RGBColor} from "../Features/ColorFeature";
 import {AbstractProcessor} from "./AbstractProcessor";
 import {VariableStorage} from "../Storages/VariableStorage";
 import {Configuration} from "../Configuration";
@@ -22,6 +22,16 @@ export class ColorProcessor extends AbstractProcessor<ColorFeature> {
         return new ColorFeature();
     }
 
+    protected getRGBAForHexColor(hexColor: string) {
+        const color = new RGBColor();
+        const rgb = hexRgb(hexColor);
+        color.r = rgb.red;
+        color.g = rgb.green;
+        color.b = rgb.blue;
+        color.a = rgb.alpha;
+        return color;
+    }
+
     process(property_type, valueObj, selector: CssSelector): ColorFeature {
         let valueObject = valueObj[0].children[0]; // todo: check if looping over all entries makes sense
         if (property_type === 'border') {
@@ -31,17 +41,12 @@ export class ColorProcessor extends AbstractProcessor<ColorFeature> {
             }
         }
         let color = super.process(property_type, valueObj, selector);
-        let rgb;
 
         switch (valueObject.type) {
             case 'ident': // basic string, e.g. black
                 color.original = valueObject.value;
                 color.original_type = 'name';
-                rgb = hexRgb(toHex(valueObject.value));
-                color.rgba.r = rgb.red;
-                color.rgba.g = rgb.green;
-                color.rgba.b = rgb.blue;
-                color.rgba.a = rgb.alpha / 255;
+                color.rgba = this.getRGBAForHexColor(toHex(valueObject.value));
                 break;
             case 'variable': // SCSS variable, e.g. $black
                 if (Configuration.skip_variables) {
@@ -58,11 +63,7 @@ export class ColorProcessor extends AbstractProcessor<ColorFeature> {
             case 'color': // HEX color, e.g. #000 or #000000
                 color.original = '#' + valueObject.value;
                 color.original_type = 'hex';
-                rgb = hexRgb(valueObject.value);
-                color.rgba.r = rgb.red;
-                color.rgba.g = rgb.green;
-                color.rgba.b = rgb.blue;
-                color.rgba.a = rgb.alpha / 255;
+                color.rgba = this.getRGBAForHexColor(valueObject.value);
                 break;
             case 'function': // RGB color, e.g. rgb(10, 10, 10) or rgba(10, 10, 10, 0.1)
                 const function_name = valueObject.children[0].value;
